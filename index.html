@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>【炎上】第一回探索者村焼き選手権 — Session Log</title>
+<meta name="description" content="クトゥルフ神話TRPG（CoC6）リプレイまとめ。温泉ツアーを装い、句都愚（クトゥグア）信仰の生贄村を燃やす出目芸コメディ卓の記録。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rampart+One&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&family=Yuji+Syuku&family=Bungee&display=swap" rel="stylesheet">
+<style>
+  :root {
+    /* ── 焦土とネオンのパレット ── */
+    --ash: #0d0908;
+    --char: #16100c;
+    --ember-bg: #1d120b;
+    --flame: #ff5a1f;
+    --flame-hi: #ff9d4d;
+    --ember: #ff7a2d;
+    --gold: #ffc24d;
+    --neon-pink: #ff2e7e;
+    --neon-cyan: #28e0d0;
+    --neon-violet: #b14dff;
+    --paper: #f6e7d4;
+    --paper-dim: #c9b89f;
+    --smoke: rgba(246, 231, 212, 0.62);
+    --line-soft: rgba(246, 231, 212, 0.14);
+    --rainbow: linear-gradient(90deg, #ff2e7e, #ff7a2d, #ffc24d, #28e0d0, #b14dff);
+
+    /* PC原卓色 */
+    --pc-omega: #b15cff;   /* オメガ（原色#9c27b0を暗背景で視認性up） */
+    --pc-matsuoka: #ff5d8a;
+    --pc-hoshimiya: #5fd16a;
+    --pc-yukina: #ff6a5d;
+    --pc-blaze: #4db5ff;
+
+    --scroll: 0;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Zen Kaku Gothic New", sans-serif;
+    background: var(--ash);
+    color: var(--paper);
+    line-height: 1.92;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── 焦げ目グレイン ── */
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 9000;
+    opacity: 0.42; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' seed='7'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.16 0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation: grain-shift 9s steps(9) infinite;
+  }
+  @keyframes grain-shift {
+    0%{transform:translate(0,0)} 20%{transform:translate(-3%,2%)} 40%{transform:translate(2%,-3%)}
+    60%{transform:translate(-2%,-2%)} 80%{transform:translate(3%,1%)} 100%{transform:translate(0,0)}
+  }
+
+  /* ── 立ち上る熱気のベール ── */
+  .heat {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1;
+    background:
+      radial-gradient(120% 60% at 50% 110%, rgba(255,90,31,0.22) 0%, transparent 55%),
+      radial-gradient(90% 50% at 80% 105%, rgba(255,46,126,0.10) 0%, transparent 60%);
+  }
+
+  /* ── 火の粉（JS生成）── */
+  .ember-field { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
+  .spark {
+    position: absolute; bottom: -12px; width: 4px; height: 4px; border-radius: 50%;
+    background: var(--gold);
+    box-shadow: 0 0 6px 1px var(--ember);
+    animation: rise var(--dur, 9s) linear infinite;
+    animation-delay: var(--delay, 0s);
+    opacity: 0;
+  }
+  @keyframes rise {
+    0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0; }
+    10%  { opacity: 0.9; }
+    70%  { opacity: 0.7; }
+    100% { transform: translateY(-104vh) translateX(var(--drift, 30px)) scale(0.3); opacity: 0; }
+  }
+
+  /* ── 進行バー（炎→虹） ── */
+  .progress { position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 9500; background: rgba(255,90,31,0.12); }
+  .progress::after {
+    content:""; position:absolute; top:0; left:0; height:100%;
+    width: calc(var(--scroll) * 100%);
+    background: var(--rainbow); background-size: 220% 100%;
+    box-shadow: 0 0 10px var(--flame);
+    animation: shine 3s linear infinite;
+  }
+  @keyframes shine { from{background-position:0% 50%} to{background-position:220% 50%} }
+
+  /* ── reveal ── */
+  [data-reveal] { opacity: 0; transform: translateY(34px); transition: opacity .9s cubic-bezier(.2,.8,.2,1), transform .9s cubic-bezier(.2,.8,.2,1); transition-delay: var(--delay,0s); }
+  [data-reveal].vis { opacity: 1; transform: none; }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 1.4rem; position: relative; z-index: 3; }
+
+  /* ╔═══ HERO ═══╗ */
+  .hero {
+    min-height: 100vh; position: relative; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center; padding: 5rem 1.4rem 4rem;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 78%, rgba(255,90,31,0.30) 0%, transparent 58%),
+      linear-gradient(180deg, var(--ash) 0%, #2a1408 70%, #3a1c09 100%);
+  }
+  /* 揺らめく地平の炎 */
+  .hero-fire {
+    position: absolute; left: 0; right: 0; bottom: 0; height: 38vh; pointer-events: none; z-index: 1;
+    background:
+      radial-gradient(60% 100% at 20% 100%, rgba(255,90,31,.55), transparent 70%),
+      radial-gradient(55% 100% at 50% 100%, rgba(255,194,77,.55), transparent 70%),
+      radial-gradient(60% 100% at 82% 100%, rgba(255,46,126,.40), transparent 70%);
+    filter: blur(8px);
+    animation: flameflux 4.5s ease-in-out infinite alternate;
+    mix-blend-mode: screen;
+  }
+  @keyframes flameflux {
+    0%   { transform: scaleY(1) translateY(0); opacity: .85; }
+    50%  { transform: scaleY(1.12) translateY(-2%); opacity: 1; }
+    100% { transform: scaleY(0.96) translateY(1%); opacity: .8; }
+  }
+
+  .hero-kicker {
+    font-family: "Bungee", sans-serif; font-size: clamp(.66rem,1.6vw,.9rem);
+    letter-spacing: .34em; color: var(--gold); position: relative; z-index: 3;
+    margin-bottom: 1.4rem; opacity: 0; animation: up 1s ease-out .3s forwards;
+    text-shadow: 0 0 14px rgba(255,194,77,.6);
+  }
+  .hero-badge {
+    display:inline-block; font-family:"Bungee"; font-size:.62rem; letter-spacing:.2em;
+    padding:.32em .9em; border-radius:99px; color:var(--ash);
+    background: var(--rainbow); background-size:200% 100%; animation: shine 4s linear infinite;
+    margin-bottom: 1.6rem; position: relative; z-index: 3; opacity: 0; animation: up 1s ease-out .1s forwards, shine 4s linear infinite;
+  }
+  .hero-title {
+    font-family: "Rampart One", sans-serif; font-weight: 400;
+    font-size: clamp(2.7rem, 11vw, 7.6rem); line-height: .98; letter-spacing: .03em;
+    position: relative; z-index: 3; color: var(--paper);
+    text-shadow: 0 2px 0 #b3380f, 0 0 32px rgba(255,90,31,.65), 0 0 60px rgba(255,46,126,.35);
+  }
+  .hero-title .ch { display: inline-block; opacity: 0; transform: translateY(40px) rotate(-4deg); filter: blur(8px); animation: drop 1s cubic-bezier(.16,1,.3,1) forwards; animation-delay: calc(.8s + var(--i)*.07s); }
+  @keyframes drop { to { opacity:1; transform:none; filter:blur(0);} }
+  .hero-sub {
+    font-family: "Yuji Syuku", serif; font-size: clamp(1rem,2.4vw,1.5rem); color: var(--paper-dim);
+    margin-top: 1.6rem; position: relative; z-index: 3; letter-spacing: .08em;
+    opacity: 0; animation: up 1s ease-out 1.9s forwards;
+  }
+  .hero-meta {
+    margin-top: 2.4rem; display: flex; gap: 1.4rem; flex-wrap: wrap; justify-content: center;
+    font-size: .8rem; color: var(--smoke); position: relative; z-index: 3;
+    opacity: 0; animation: up 1s ease-out 2.2s forwards;
+  }
+  .hero-meta span { display:flex; align-items:center; gap:.4em; }
+  .hero-meta .dot { width:5px; height:5px; border-radius:50%; background: var(--flame); box-shadow:0 0 8px var(--flame); }
+  @keyframes up { from{opacity:0; transform:translateY(20px);} to{opacity:1; transform:none;} }
+
+  .scroll-hint {
+    position: absolute; bottom: 1.4rem; left: 50%; transform: translateX(-50%); z-index: 3;
+    font-family:"Bungee"; font-size:.6rem; letter-spacing:.3em; color: var(--paper-dim);
+    opacity: 0; animation: up 1s ease 2.6s forwards;
+  }
+  .scroll-hint::after { content:""; display:block; width:1px; height:34px; margin:.6rem auto 0; background:linear-gradient(var(--flame),transparent); animation: pulseY 2s infinite; }
+  @keyframes pulseY { 0%{transform:scaleY(0);transform-origin:top} 50%{transform:scaleY(1);transform-origin:top} 50.01%{transform:scaleY(1);transform-origin:bottom} 100%{transform:scaleY(0);transform-origin:bottom} }
+
+  /* ── セクション共通 ── */
+  section.block { padding: 5.5rem 0; position: relative; z-index: 3; }
+  .sec-head { display:flex; align-items:baseline; gap:1rem; margin-bottom: 2.4rem; }
+  .sec-num { font-family:"Bungee"; font-size:.9rem; color:var(--flame); letter-spacing:.1em; }
+  .sec-title { font-family:"Rampart One"; font-size: clamp(1.6rem,4.4vw,2.6rem); color: var(--paper); letter-spacing:.04em; }
+  .sec-rule { flex:1; height:1px; background: linear-gradient(90deg, var(--flame), transparent); align-self:center; }
+
+  /* ── 凡例 ── */
+  .legend { background: var(--char); border: 1px solid var(--line-soft); border-radius: 14px; padding: 1.8rem; }
+  .legend h3 { font-family:"Yuji Syuku"; font-size:1.05rem; color: var(--gold); margin-bottom:1.1rem; letter-spacing:.06em; }
+  .legend-grid { display:grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap:1rem; }
+  .legend-item { font-size:.86rem; color:var(--paper-dim); display:flex; gap:.7rem; align-items:flex-start; }
+  .legend-swatch { flex:0 0 auto; margin-top:.2em; }
+  .lg-pc { width:26px; height:14px; border-radius:3px; border-left:4px solid var(--pc-omega); background: rgba(177,92,255,.16); }
+  .lg-gm { width:26px; height:14px; border-radius:3px; border-left:4px solid var(--flame); background: rgba(255,90,31,.12); font-style:italic; }
+  .lg-npc { width:26px; height:14px; border-radius:3px; border:1px dashed var(--paper-dim); }
+  .lg-dice { display:inline-block; }
+
+  /* ── 登場人物 ── */
+  .cast-grid { display:grid; grid-template-columns: repeat(auto-fill,minmax(248px,1fr)); gap:1.1rem; }
+  .card {
+    position: relative; background: linear-gradient(160deg, var(--char), var(--ember-bg));
+    border: 1px solid var(--line-soft); border-radius: 14px; padding: 1.5rem; overflow:hidden;
+    transition: transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s, filter .16s;
+  }
+  .card::before { content:""; position:absolute; top:0; left:0; width:100%; height:3px; background: var(--c, var(--flame)); box-shadow: 0 0 16px var(--c, var(--flame)); }
+  .card::after { content:""; position:absolute; inset:0; background: var(--c,var(--flame)); opacity:0; transition:opacity .3s; mix-blend-mode:soft-light; pointer-events:none; }
+  .card:hover { transform: translateY(-5px); box-shadow: 0 14px 40px rgba(0,0,0,.5), 0 0 30px -8px var(--c,var(--flame)); filter: brightness(1.06); }
+  .card:hover::after { opacity:.16; }
+  .card .role { font-family:"Bungee"; font-size:.58rem; letter-spacing:.16em; color: var(--c,var(--flame)); margin-bottom:.5rem; }
+  .card .nm { font-family:"Yuji Syuku"; font-size:1.22rem; color: var(--paper); margin-bottom:.2rem; line-height:1.3; }
+  .card .alias { font-size:.74rem; color: var(--paper-dim); margin-bottom:.7rem; }
+  .card .desc { font-size:.83rem; color: var(--smoke); line-height:1.75; }
+  .card .aim { margin-top:.8rem; font-size:.78rem; color:var(--paper-dim); border-top:1px dashed var(--line-soft); padding-top:.6rem; }
+  .card .aim b { color: var(--gold); font-weight:700; }
+  .cast-sub { font-family:"Yuji Syuku"; font-size:1.15rem; color:var(--flame-hi); margin: 2.4rem 0 1.2rem; letter-spacing:.06em; }
+
+  /* ── 概要 ── */
+  .lead { font-size: clamp(1rem,2.1vw,1.18rem); line-height: 2.1; color: var(--paper); max-width: 760px; }
+  .lead .hl { color: var(--gold); font-weight:700; }
+  .lead .eld { font-family:"Yuji Syuku"; color: var(--neon-violet); }
+
+  /* ── タイムライン ── */
+  .tl { position: relative; padding-left: 2.2rem; }
+  .tl::before { content:""; position:absolute; left:8px; top:6px; bottom:6px; width:2px; background: linear-gradient(var(--flame), var(--neon-pink), var(--neon-violet)); opacity:.55; }
+  .act { position: relative; margin-bottom: 2.8rem; }
+  .act::before { content:""; position:absolute; left:-2.2rem; top:.35rem; width:18px; height:18px; border-radius:50%; background: var(--ash); border:3px solid var(--flame); box-shadow:0 0 12px var(--flame); transform: translateX(-1px); }
+  .act.crisis::before { border-color: var(--neon-pink); box-shadow:0 0 14px var(--neon-pink); }
+  .act.climax::before { border-color: var(--gold); box-shadow:0 0 18px var(--gold); }
+  .act-meta { display:flex; align-items:baseline; gap:.8rem; margin-bottom:.6rem; flex-wrap:wrap; }
+  .act-id { font-family:"Bungee"; font-size:.7rem; color: var(--flame); letter-spacing:.08em; }
+  .act-time { font-family:"Bungee"; font-size:.66rem; color: var(--paper-dim); padding:.18em .6em; border:1px solid var(--line-soft); border-radius:99px; }
+  .act-h { font-family:"Yuji Syuku"; font-size: clamp(1.15rem,3vw,1.5rem); color: var(--paper); letter-spacing:.04em; }
+  .act-body > * + * { margin-top: .7rem; }
+  .sub-h { font-family:"Bungee"; font-size:.66rem; letter-spacing:.12em; color: var(--flame-hi); margin-top:1.1rem; }
+
+  /* ── 帰属付き本文 ── */
+  .gm-desc {
+    border-left: 3px solid var(--flame); background: rgba(255,90,31,.07);
+    padding: .7rem 1rem; border-radius: 0 8px 8px 0; color: var(--paper-dim); font-style: italic; font-size:.92rem;
+  }
+  .line { display:flex; gap:.6rem; align-items:flex-start; font-size:.94rem; padding-left:.2rem; }
+  .line .who {
+    flex:0 0 auto; font-weight:700; font-size:.82rem; padding:.05em .55em; border-radius:6px;
+    border-left:4px solid var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); color: var(--c);
+    white-space: nowrap;
+  }
+  .line .say { color: var(--paper); }
+  .line.npc .who { border:1px dashed var(--paper-dim); border-left:1px dashed var(--paper-dim); color: var(--paper-dim); background:transparent; }
+  .line.npc .who i { font-style:normal; font-family:"Bungee"; font-size:.52rem; opacity:.7; margin-left:.4em; letter-spacing:.05em; }
+  .line.eld .who { color: var(--neon-violet); border-color: var(--neon-violet); }
+  .line.eld .say { font-family:"Yuji Syuku"; color: var(--neon-violet); }
+
+  /* ── ダイスバッジ ── */
+  .dice {
+    display:inline-block; font-family:"Bungee"; font-size:.6rem; letter-spacing:.04em;
+    padding:.2em .6em; border-radius:6px; white-space:nowrap; vertical-align:middle;
+    border:1px solid currentColor;
+  }
+  .dice.ok    { color:#7fe08a; }
+  .dice.fail  { color:#ff8a6a; }
+  .dice.spec  { color:var(--ash); border:none; background: var(--rainbow); background-size:200% 100%; animation: shine 3s linear infinite; }
+  .dice.fumble{ color:#ff3b5c; background: rgba(255,59,92,.1); }
+
+  /* ── 結末グリッド ── */
+  .ends { display:grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap:1.1rem; }
+  .end-card { background: var(--char); border:1px solid var(--line-soft); border-radius:12px; padding:1.4rem; transition:transform .3s, box-shadow .3s; }
+  .end-card:hover { transform:translateY(-4px); box-shadow:0 10px 30px rgba(0,0,0,.45); }
+  .end-card h4 { font-family:"Yuji Syuku"; font-size:1.05rem; color: var(--gold); margin-bottom:.5rem; }
+  .end-card p { font-size:.85rem; color: var(--smoke); line-height:1.8; }
+  .verdict { display:flex; gap:.8rem; flex-wrap:wrap; margin-top:1.6rem; }
+  .verdict .v { flex:1 1 220px; padding:1.2rem; border-radius:12px; border:1px solid var(--line-soft); background: linear-gradient(160deg,var(--char),var(--ember-bg)); }
+  .verdict .v .k { font-family:"Bungee"; font-size:.62rem; letter-spacing:.1em; color:var(--flame); margin-bottom:.5rem; }
+  .verdict .v p { font-size:.86rem; color:var(--paper-dim); line-height:1.8; }
+
+  /* ── OOC ── */
+  .ooc { background: var(--char); border:1px dashed var(--line-soft); border-radius:14px; padding:1.8rem; }
+  .ooc li { font-size:.88rem; color: var(--paper-dim); line-height:1.85; list-style:none; padding-left:1.4rem; position:relative; margin-bottom:.7rem; }
+  .ooc li::before { content:""; position:absolute; left:0; top:.7em; width:7px; height:7px; border-radius:50%; background: var(--neon-cyan); box-shadow:0 0 8px var(--neon-cyan); }
+
+  /* ── footer ── */
+  footer { padding: 3.5rem 0 4rem; text-align:center; position:relative; z-index:3; border-top:1px solid var(--line-soft); margin-top:2rem; }
+  footer .f-title { font-family:"Rampart One"; font-size:1.3rem; color:var(--flame); margin-bottom:.6rem; }
+  footer .f-meta { font-size:.74rem; color:var(--smoke); line-height:1.9; }
+  footer code { font-family:"Bungee"; font-size:.62rem; color:var(--paper-dim); word-break:break-all; }
+
+  /* ── レスポンシブ ── */
+  @media (max-width: 620px) {
+    .line { flex-direction: column; gap:.2rem; }
+    .tl { padding-left: 1.7rem; }
+    .act::before { left:-1.7rem; }
+    body { line-height: 1.85; }
+  }
+
+  /* ── モーション配慮 ── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    [data-reveal] { opacity:1 !important; transform:none !important; }
+    .hero-title .ch { opacity:1 !important; transform:none !important; filter:none !important; }
+    .ember-field, .grain, .hero-fire { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="heat" aria-hidden="true"></div>
+<div class="ember-field" id="emberField" aria-hidden="true"></div>
+<div class="progress" aria-hidden="true"></div>
+
+<!-- ╔═══ HERO ═══╗ -->
+<header class="hero">
+  <div class="hero-fire" aria-hidden="true"></div>
+  <div class="hero-badge">CoC 6th · COMEDY SESSION</div>
+  <div class="hero-kicker">TANSAKUSHA · MURAYAKI · CHAMPIONSHIP</div>
+  <h1 class="hero-title" id="heroTitle" aria-label="【炎上】第一回探索者村焼き選手権"></h1>
+  <p class="hero-sub">温泉ツアーの仮面の下、5人の探索者が村を燃やしに来た。</p>
+  <div class="hero-meta">
+    <span><i class="dot"></i>クトゥルフ神話TRPG（CoC6版）</span>
+    <span><i class="dot"></i>探索者5・GM/共同KP2</span>
+    <span><i class="dot"></i>全2回・2,036発言</span>
+  </div>
+  <div class="scroll-hint" aria-hidden="true">SCROLL</div>
+</header>
+
+<main>
+<!-- ── 読み方凡例 ── -->
+<section class="block" id="legend">
+  <div class="wrap">
+    <div class="sec-head" data-reveal><span class="sec-num">00</span><h2 class="sec-title">読み方</h2><span class="sec-rule"></span></div>
+    <div class="legend" data-reveal>
+      <h3>このページの帰属表記</h3>
+      <div class="legend-grid">
+        <div class="legend-item"><span class="legend-swatch lg-gm"></span><div><b>GM／焔の地の文</b><br>情景・状況の描写。引用ブロックで示す。</div></div>
+        <div class="legend-item"><span class="legend-swatch lg-pc"></span><div><b>探索者（PC）のセリフ</b><br>名前バッジは各探索者の原卓カラー。</div></div>
+        <div class="legend-item"><span class="legend-swatch lg-npc"></span><div><b>NPC のセリフ</b><br>GMが演じる村人・店主・神格など。点線枠＋NPC印。</div></div>
+        <div class="legend-item"><span class="legend-swatch lg-dice"><span class="dice spec">ダイス</span></span><div><b>判定（ダイス）</b><br>勝敗を分けた重要ロールのみ。<span class="dice ok">成功</span> <span class="dice fail">失敗</span> <span class="dice spec">決定的成功</span> <span class="dice fumble">致命的失敗</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 登場人物 ── -->
+<section class="block" id="cast">
+  <div class="wrap">
+    <div class="sec-head" data-reveal><span class="sec-num">01</span><h2 class="sec-title">登場人物</h2><span class="sec-rule"></span></div>
+    <div class="cast-grid">
+      <article class="card" data-reveal style="--c:var(--pc-omega)">
+        <div class="role">PLAYER CHARACTER</div>
+        <div class="nm">パチの象徴・オメガオテプ</div>
+        <div class="alias">通称「オメガ」「ギャンブル神」</div>
+        <p class="desc">言葉が通じない異形の神。発言はパチンコ／ジャグラーの効果音と記号の羅列（異言）。技能は芸術（ギャンブル）一点張りで、決定的成功も致命的失敗も連発する出目芸人。</p>
+        <p class="aim"><b>目的</b>　村を燃やす・村長の確保／殺害・儀式の証拠を確保</p>
+      </article>
+      <article class="card" data-reveal style="--c:var(--pc-matsuoka); --delay:.05s">
+        <div class="role">PLAYER CHARACTER</div>
+        <div class="nm">松岡　修造</div>
+        <div class="alias">「太陽」「邪神修造」</div>
+        <p class="desc">テニヌ（架空競技）の使い手。口を開けば「熱くなれよ」。出目の振れが激しいもう一柱の邪神。</p>
+        <p class="aim"><b>目的</b>　村を焼いて金目のものを奪う</p>
+      </article>
+      <article class="card" data-reveal style="--c:var(--pc-yukina); --delay:.1s">
+        <div class="role">PLAYER CHARACTER</div>
+        <div class="nm">花沙華　雪雫</div>
+        <div class="alias">「ユキナ」</div>
+        <p class="desc">小食で飄々とした少女。忍び歩き・変装・拳銃・魔術をこなす実戦派。</p>
+        <p class="aim"><b>目的</b>　銀の黄昏教団の協力者として、村を燃やし証拠を確保・改宗させる</p>
+      </article>
+      <article class="card" data-reveal style="--c:var(--pc-hoshimiya); --delay:.15s">
+        <div class="role">PLAYER CHARACTER</div>
+        <div class="nm">星宮 公造</div>
+        <div class="alias">「ドライバー」</div>
+        <p class="desc">㈱メラメラ企画のツアー専属ドライバー。村に何度も来て顔が広い、面倒見のいい中年。</p>
+        <p class="aim"><b>目的</b>　村を燃やす者に協力する</p>
+      </article>
+      <article class="card" data-reveal style="--c:var(--pc-blaze); --delay:.2s">
+        <div class="role">PLAYER CHARACTER</div>
+        <div class="nm">ブレイズ</div>
+        <div class="alias">外国人バスガイド</div>
+        <p class="desc">日本語が拙いツアーガイド。当初は事情を知らないが、星宮に村の闇を打ち明けられ協力者になる。</p>
+        <p class="aim"><b>目的</b>　（道中で星宮の協力者に）</p>
+      </article>
+    </div>
+
+    <h3 class="cast-sub" data-reveal>GM・NPC</h3>
+    <div class="cast-grid">
+      <article class="card" data-reveal style="--c:var(--flame)">
+        <div class="role">GAME MASTER</div>
+        <div class="nm">思い出の病人(ルーニー)</div>
+        <p class="desc">メインGM。ノリ重視・メタネタ多用の進行役。出目のたびにパチンコ実況のような裁定を入れる。</p>
+      </article>
+      <article class="card" data-reveal style="--c:var(--neon-violet); --delay:.05s">
+        <div class="role">CO-KEEPER / NPC</div>
+        <div class="nm">焔</div>
+        <p class="desc">村長、および㈱メラメラ企画社長（村長の兄）を演じる。終盤のクトゥグア化身戦のボス進行・裁定・描写を担当。句都愚（クトゥグア）信仰の神官。</p>
+      </article>
+      <article class="card" data-reveal style="--c:var(--gold); --delay:.1s">
+        <div class="role">NPC</div>
+        <div class="nm">須日木 守三（スピキ）</div>
+        <p class="desc">食堂の店主。自慢の赫人豚（バーニングポーク）を出す。腕に大きなやけど痕。</p>
+      </article>
+      <article class="card" data-reveal style="--c:var(--gold); --delay:.15s">
+        <div class="role">NPC</div>
+        <div class="nm">旅館の女将 / 鈴木 / 村人たち</div>
+        <p class="desc">口の達者な宿の女将。村の住人の多くは外から移住し、「神様の加護」を信じて幸せに暮らしている。</p>
+      </article>
+      <article class="card" data-reveal style="--c:var(--neon-pink); --delay:.2s">
+        <div class="role">DEITY / NPC</div>
+        <div class="nm">句都愚（クトゥグア）／炎の神</div>
+        <p class="desc">村の守護神にして「生ける漆黒の炎」。依頼主の異形の神も同系統。発言は文字化けした異言。</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ── 概要 ── -->
+<section class="block" id="overview">
+  <div class="wrap">
+    <div class="sec-head" data-reveal><span class="sec-num">02</span><h2 class="sec-title">概要</h2><span class="sec-rule"></span></div>
+    <p class="lead" data-reveal>
+      温泉ツアーを装って山深い <span class="hl">爆赫人愚（ばくかくじんぐ）村</span> を訪れた5人の探索者は、それぞれ別々の事情から「この村を燃やす」という裏の使命を帯びていた。村は災厄のたびに人身御供を炎の神・<span class="eld">句都愚（クトゥグア）</span>へ捧げる生贄信仰の里である。一行は食事と宿で村に溶け込みつつ各所へ放火を仕掛け、消火に走る村人をテニヌや拳銃や粉塵爆発で蹴散らし、ついには村を全焼させる。立ちはだかる村長＝句都愚の化身「生ける漆黒の炎」をカーチェイスの末に振り切り、全員が脱出に成功する——という、<span class="hl">出目芸とアドリブ</span>に満ちた一夜の記録。
+    </p>
+  </div>
+</section>
+
+<!-- ── 時系列 ── -->
+<section class="block" id="timeline">
+  <div class="wrap">
+    <div class="sec-head" data-reveal><span class="sec-num">03</span><h2 class="sec-title">時系列</h2><span class="sec-rule"></span></div>
+    <p class="lead" style="font-size:.9rem; margin-bottom:2rem; color:var(--paper-dim)" data-reveal>実ログに日時情報が無いため、ゲーム内時刻（IGT）で構成。前半＝導入〜各所放火、後半＝消火攻防〜決戦の2回に分かれて進行した。</p>
+
+    <div class="tl">
+      <div class="act" data-reveal>
+        <div class="act-meta"><span class="act-id">ACT 01</span><span class="act-time">DAY1 / 道中</span></div>
+        <h3 class="act-h">温泉ツアーのバス車内</h3>
+        <div class="act-body">
+          <blockquote class="gm-desc">探索者たちは㈱メラメラ企画の『一泊二日で行く、ポカポカ温泉ツアー』に参加し、山深い村へ向かっている。運転は星宮、ガイドはブレイズ。</blockquote>
+          <p>星宮が急カーブをドリフトで攻め、松岡が「ブレーキを踏むな！」と煽る賑やかな道中。自己紹介では、言葉の通じないオメガ（異言）と、テニヌを名乗る松岡の濃さが際立つ。</p>
+          <p class="line" style="--c:var(--pc-matsuoka)"><span class="who">松岡</span><span class="say">「テニヌはテニスと似たようなものでな！相手にボールをぶつけても良いんだ！」</span></p>
+          <p>その松岡、さっそく自慢のテニヌで自爆する。</p>
+          <p><span class="dice fumble">テニヌ 致命的失敗</span> — 跳ね返ったボールとナイフが自分に突き刺さる開幕（星宮の応急手当で事なきを得る）。</p>
+        </div>
+      </div>
+
+      <div class="act" data-reveal>
+        <div class="act-meta"><span class="act-id">ACT 02</span><span class="act-time">DAY1 / 昼</span></div>
+        <h3 class="act-h">食堂 — 最初の違和感</h3>
+        <div class="act-body">
+          <blockquote class="gm-desc">村に到着。店主・須日木守三（スピキ）が出迎える食堂で、地場産の赫人豚（バーニングポーク）が振る舞われる。</blockquote>
+          <p><span class="dice ok">クトゥルフ神話 決定的成功</span> ここでオメガの異言が（仲間内では）通じるようになる。</p>
+          <p><span class="dice ok">目星 成功</span> タッパーを受け取る際、<b>店主の腕の大きなやけど痕</b>に気づく。</p>
+          <p>聞き耳の成功者は、村人が村長を強く慕い、祭り前の「説教」を楽しみにしていること、移住者も今の暮らしに満足していることを知る。生贄信仰の最初の影。</p>
+        </div>
+      </div>
+
+      <div class="act" data-reveal>
+        <div class="act-meta"><span class="act-id">ACT 03</span><span class="act-time">DAY1 / 夕方前</span></div>
+        <h3 class="act-h">旅館 — 宿の女将</h3>
+        <div class="act-body">
+          <blockquote class="gm-desc">立派な旅館で女将が一行を迎える。</blockquote>
+          <p class="line npc"><span class="who">女将<i>NPC</i></span><span class="say">「防犯といっちゃなんだけど、この旅館は24:00に施錠されてしまうから、そこだけ忘れぬように」</span></p>
+          <p>旅館の施錠は24:00、19:00〜22:00は祭り準備で館内がほぼ無人——後の放火に効く下準備が示される。</p>
+        </div>
+      </div>
+
+      <div class="act" data-reveal>
+        <div class="act-meta"><span class="act-id">ACT 04</span><span class="act-time">14:00</span></div>
+        <h3 class="act-h">「村焼き選手権」開幕</h3>
+        <div class="act-body">
+          <blockquote class="gm-desc">マップが公開され、GMから本シナリオの核心ルールが説明される。</blockquote>
+          <p>放火は「目撃者のいない状況で隠密系技能 → 幸運成功」で着火。火を点けると村人が集まり、一定人数で消火される。村人を妨害しつつ延焼条件のラウンドを耐えれば消火不能になる。<b>行動順＝松岡 → オメガ → ユキナ → 星宮。</b></p>
+          <p class="line" style="--c:var(--flame)"><span class="who">GM</span><span class="say">「では、お待たせしました。第一回探索者村焼き選手権開始」</span></p>
+        </div>
+      </div>
+
+      <div class="act" data-reveal>
+        <div class="act-meta"><span class="act-id">ACT 05</span><span class="act-time">14:00〜（前半戦）</span></div>
+        <h3 class="act-h">各所への放火</h3>
+        <div class="act-body">
+          <p class="sub-h">松岡 — 山／洞窟</p>
+          <blockquote class="gm-desc">仄暗い洞窟の奥に、焼死体が左右に並ぶ「冒涜的なハイウェイ」と祭壇・石碑があった。</blockquote>
+          <p>石碑は「尊く、名誉ある供犠の碑」。病魔・不作・台風などの災厄のたびに村人が句都愚へ捧げられてきた歴史（戦前から続く人身御供）が刻まれていた。SANチェックを経て、松岡はマッチで森に放火する。</p>
+          <p class="line" style="--c:var(--pc-matsuoka)"><span class="who">松岡</span><span class="say">「世間はさ！冷てえよなぁ！！！ …森ホッカイロ！！」（着火）</span></p>
+
+          <p class="sub-h">オメガ — バス停</p>
+          <p><span class="dice spec">芸術（ギャンブル）決定的成功</span> GMが「大当たり！」とノって、バス停のネジがことごとく緩み、ひと工夫で崩せる木材と化す。放火用のライターも入手。</p>
+
+          <p class="sub-h">ユキナ — 村長宅</p>
+          <blockquote class="gm-desc">西洋風の立派な村長邸。開いた門から忍び込む。</blockquote>
+          <p>ガソリンを玄関から庭に撒いて着火。揮発したガソリンが轟々と燃え上がる。</p>
+
+          <p class="sub-h">星宮 — 民家</p>
+          <p>村人・鈴木から、移住者が「神様の加護」を信じて根を下ろしていること、軽トラ（ホンダ・アクティ）の鍵の在り処を聞き出す。前半の終わり、村長宅と森から黒煙が立ち、村がざわつき始める。</p>
+        </div>
+      </div>
+
+      <div class="act crisis" data-reveal>
+        <div class="act-meta"><span class="act-id">ACT 06</span><span class="act-time">15:00〜（後半戦）</span></div>
+        <h3 class="act-h">誤爆、そしてギャンブルの蘇生</h3>
+        <div class="act-body">
+          <p>ユキナはスピキに完璧に変装し、村人・鈴木を始末しようとして——</p>
+          <p><span class="dice fumble">キック 致命的失敗</span> 蹴りが誤って星宮を直撃。星宮はHP1の瀕死に。続く応急手当も <span class="dice fumble">致命的失敗</span>。</p>
+          <p>窮地に、オメガが「バタフライエフェクト」と称してダイスを振る。</p>
+          <p><span class="dice spec">芸術（ギャンブル）決定的成功</span></p>
+          <blockquote class="gm-desc">虹保留はゆきなの応急を致命的失敗から、普通の失敗へと押し戻したのだ！</blockquote>
+          <p>「因果すら変える」一投で、星宮は息を吹き返す。</p>
+        </div>
+      </div>
+
+      <div class="act crisis" data-reveal>
+        <div class="act-meta"><span class="act-id">ACT 07</span><span class="act-time">16:00〜17:00</span></div>
+        <h3 class="act-h">説得と、炎上の拡大</h3>
+        <div class="act-body">
+          <p class="sub-h">星宮 → ブレイズ</p>
+          <p class="line" style="--c:var(--pc-hoshimiya)"><span class="who">星宮</span><span class="say">「この村はおかしい。移り住んだ人が行方不明になる事件も起きている。…いっそこの村が燃えてしまえばいい、そう思うようになっていった」</span></p>
+          <p><span class="dice ok">説得 成功</span></p>
+          <p class="line" style="--c:var(--pc-blaze)"><span class="who">ブレイズ</span><span class="say">「正直、星宮さんの考えはイカれています。けど、この村はやばいっす。…協力するっすよ」</span></p>
+          <p>星宮は脱出用に <b>WRX STI</b> を確保し、車に細工を始める。</p>
+
+          <p class="sub-h">ユキナ — 食堂を粉塵爆発で</p>
+          <p>小麦粉を撒いて着火。<span class="dice ok">DEX×5 成功</span> 巻き込まれず一気に炎上させる。</p>
+
+          <p class="sub-h">松岡 — テニヌ説法と虐殺</p>
+          <p>集まった村人を「熱くなれよ」論で <span class="dice ok">言いくるめ 成功</span>、消火の増援を17:00まで足止め。さらに <span class="dice spec">テニヌ スペシャル</span>、出目=70発のテニスボールを乱射する一方的な展開に。</p>
+          <p class="line" style="--c:var(--pc-matsuoka)"><span class="who">松岡</span><span class="say">「その痛みが！お前を強くするんだ！！！」</span></p>
+          <p>3ラウンドを持ちこたえ、森の炎が延焼。火は民家・食堂・養豚場へ燃え移る。</p>
+        </div>
+      </div>
+
+      <div class="act crisis" data-reveal>
+        <div class="act-meta"><span class="act-id">ACT 08</span><span class="act-time">17:00〜</span></div>
+        <h3 class="act-h">村長・焔との対峙</h3>
+        <div class="act-body">
+          <blockquote class="gm-desc">村長邸の庭で説法。外宇宙を想起させる厳かな音楽と甘ったるい香に、聴衆は恍惚としている。</blockquote>
+          <p>ユキナの拳銃を村長は華麗に回避。村長は思考を読み、放火犯がこの一行であることを見抜く。</p>
+          <p class="line eld"><span class="who">焔（村長）</span><span class="say">「この村の守護神、炎の神 句都愚様を信仰していますよ」</span></p>
+          <p class="line" style="--c:var(--pc-yukina)"><span class="who">ユキナ</span><span class="say">「ふーん、クトゥグァか」</span></p>
+          <p class="line eld"><span class="who">焔（村長）</span><span class="say">「お前らを殺すとするかのぅ」</span></p>
+          <p>村長は雷でバス（退路の一つ）を破壊し、点火系を全滅させる。</p>
+        </div>
+      </div>
+
+      <div class="act climax" data-reveal>
+        <div class="act-meta"><span class="act-id">ACT 09</span><span class="act-time">18:00 — 決戦</span></div>
+        <h3 class="act-h">村全焼、そして脱出</h3>
+        <div class="act-body">
+          <blockquote class="gm-desc">村⭐️炎上。あらゆる所に燃え移った炎は乾いた風に乗り、村全体を焼き尽くしていく。村の呪われた風習も、邪神への信仰も、すべてが灰塵へと帰していく。</blockquote>
+          <p>句都愚の化身「<span class="eld" style="font-family:'Yuji Syuku'">生ける漆黒の炎</span>」が顕現。探索者は車両で逃げ切らねばならない（怪物との距離を8ポイントまで広げれば勝利）。</p>
+          <p>WRXで夜道を爆走。投げつけられる火球を、松岡が <span class="dice ok">テニヌ 成功</span> で打ち返して撃墜。ラケットは燃え尽きるが、ユキナが死体を積んだ車をDEX101の身体強化で押し、加速。星宮の運転で距離を確保する。</p>
+          <blockquote class="gm-desc">＝逃走終了＝あんたらの勝ち。生ける漆黒の炎は村を焼き尽くし、どこかへと消えてしまう。シナリオクリア！</blockquote>
+        </div>
+      </div>
+
+      <div class="act climax" data-reveal>
+        <div class="act-meta"><span class="act-id">ACT 10</span><span class="act-time">エピローグ</span></div>
+        <h3 class="act-h">それぞれの秘匿</h3>
+        <div class="act-body">
+          <div class="ends">
+            <div class="end-card"><h4>ユキナ（HO3）</h4><p>銀の黄昏教団支部に帰還し報告。だが証拠は燃失し、証拠確保・改宗のミッションは未達成（ドラレコ映像の回収に望みを託す）。</p></div>
+            <div class="end-card"><h4>松岡（HO2）</h4><p>火事場泥棒で <b style="color:var(--gold)">202万円分</b>の財宝を強奪、目的達成。SANと信用が大きく伸びる。</p></div>
+            <div class="end-card"><h4>星宮</h4><p>社長（＝焔。村長の兄）から口止め料164万円を渡されるが、辞表を叩きつけて去る。後に「星宮オート」を開業し、ブレイズを雇う。</p></div>
+            <div class="end-card"><h4>オメガ</h4><p>クトゥグア化身と戦闘の末、虹演出とクトゥルフ神話技能の成功で意気投合（マブダチエンド）。村長を火球で消し炭にし、神と連れ立ってパチンコへ。依頼主の異形神からも報酬を得る。</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 結末 ── -->
+<section class="block" id="verdict">
+  <div class="wrap">
+    <div class="sec-head" data-reveal><span class="sec-num">04</span><h2 class="sec-title">決定事項・未解決・所感</h2><span class="sec-rule"></span></div>
+    <div class="verdict">
+      <div class="v" data-reveal><div class="k">RESULT</div><p>村は全焼。探索者は全員脱出に成功。各自の目的はおおむね達成（ユキナの「証拠確保・改宗」のみ未達）。</p></div>
+      <div class="v" data-reveal style="--delay:.06s"><div class="k">UNRESOLVED</div><p>句都愚の化身は「どこかへ消えた」だけで討伐はされていない。㈱メラメラ企画は教団・機関に追われ存亡の危機。「次回村焼きRTA（達成ねらい）」への言及あり。</p></div>
+      <div class="v" data-reveal style="--delay:.12s"><div class="k">IMPRESSION</div><p>救いのない題材を終始コメディとして回した卓。オメガの芸術（ギャンブル）の1か100か、松岡のテニヌ、ユキナの振れ幅——「出目芸」が物語の駆動力そのものになっていた。</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ── OOC ── -->
+<section class="block" id="ooc">
+  <div class="wrap">
+    <div class="sec-head" data-reveal><span class="sec-num">05</span><h2 class="sec-title">卓の様子（OOC）</h2><span class="sec-rule"></span></div>
+    <div class="ooc" data-reveal>
+      <ul>
+        <li>卓の笑いの中心は徹底して<b>出目</b>。オメガの芸術（ギャンブル）が決定的成功と致命的失敗を交互に叩き出し、GMがそのたびに「大当たり！」「ペカりません」とパチンコ実況のように裁定するのが一つの様式になっていた。</li>
+        <li>GM・PL間のメタネタ（パチンコ用語・実在店名、他卓やキャラの思い出話、眠気の段階確認など）が頻繁に挟まれたが、本編の進行はテンポよく保たれた。</li>
+        <li>放火の手口（ガソリン・粉塵爆発・ガスボンベ等）や暴言ネタはいずれもゲーム内の演出・キャラづけであり、ここでは詳細な手順・文言は再現していない。</li>
+      </ul>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="f-title">熱くなれよぉ！！！</div>
+    <p class="f-meta">
+      【炎上】第一回探索者村焼き選手権 — Session Log<br>
+      システム: クトゥルフ神話TRPG（CoC 6版）／ 帰属厳密化まとめ（モードA）<br>
+      <code>source: 【炎上】第一回探索者村焼き選手権[main].html</code>
+    </p>
+  </div>
+</footer>
+
+<script>
+  // タイトルを1文字ずつ span 化（stagger 用）
+  (function(){
+    var t = document.getElementById('heroTitle');
+    var s = '【炎上】第一回探索者村焼き選手権';
+    var f = document.createDocumentFragment();
+    for (var i=0;i<s.length;i++){
+      var sp = document.createElement('span');
+      sp.className='ch'; sp.textContent=s[i]; sp.style.setProperty('--i', i);
+      f.appendChild(sp);
+    }
+    t.appendChild(f);
+  })();
+
+  // スクロール進行バー
+  var ticking=false;
+  function onScroll(){
+    if(ticking) return; ticking=true;
+    requestAnimationFrame(function(){
+      var h=document.documentElement.scrollHeight-window.innerHeight;
+      var p=h>0?window.scrollY/h:0;
+      document.documentElement.style.setProperty('--scroll', p.toFixed(4));
+      ticking=false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+  // reveal
+  var prefersReduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!prefersReduce){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('vis'); io.unobserve(e.target); } });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    document.querySelectorAll('[data-reveal]').forEach(function(el){ io.observe(el); });
+
+    // 火の粉生成
+    var field=document.getElementById('emberField');
+    var N=window.innerWidth<620?16:32;
+    for(var i=0;i<N;i++){
+      var s=document.createElement('span'); s.className='spark';
+      s.style.left=(Math.random()*100)+'%';
+      var dur=7+Math.random()*7;
+      s.style.setProperty('--dur', dur.toFixed(1)+'s');
+      s.style.setProperty('--delay', (-Math.random()*dur).toFixed(1)+'s');
+      s.style.setProperty('--drift', (Math.random()*120-60).toFixed(0)+'px');
+      var sz=2+Math.random()*3; s.style.width=sz+'px'; s.style.height=sz+'px';
+      if(Math.random()<.3){ s.style.background='var(--neon-pink)'; s.style.boxShadow='0 0 6px 1px var(--neon-pink)'; }
+      field.appendChild(s);
+    }
+  } else {
+    document.querySelectorAll('[data-reveal]').forEach(function(el){ el.classList.add('vis'); });
+  }
+</script>
+</body>
+</html>
